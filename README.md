@@ -153,15 +153,15 @@ docker compose logs edge-gateway --tail 50
 
 ## URLs
 
-| | Service | URL | Description |
-|---|--------|-----|-------------|
-| 🖥️ | **Admin UI** | http://localhost:3000 | Devices & live access log |
-| ⚡ | **API** | http://localhost:8000 | REST backend |
-| 📖 | **Swagger** | http://localhost:8000/docs | Try endpoints |
-| 💚 | **Health** | http://localhost:8000/health | Liveness |
-| 📊 | **Grafana** | http://localhost:3001 | Dashboards |
-| 📈 | **Prometheus** | http://localhost:9090 | Metrics explorer |
-| 📡 | **MQTT** | `localhost:1883` | Dev broker (anonymous) |
+| Service | URL | Description |
+|--------|-----|-------------|
+| **Admin UI** | http://localhost:3000 | Devices & live access log |
+| **API** | http://localhost:8000 | REST backend |
+| **Swagger** | http://localhost:8000/docs | Try endpoints |
+| **Health** | http://localhost:8000/health | Liveness |
+| **Grafana** | http://localhost:3001 | Dashboards |
+| **Prometheus** | http://localhost:9090 | Metrics explorer |
+| **MQTT** | `localhost:1883` | Dev broker (anonymous) |
 
 ---
 
