@@ -1,9 +1,15 @@
+# Deploy to TR VPS — disabled on push until a server is configured.
+#
+# To enable automatic deploy on main:
+#   1. Add GitHub Environment `production-tr` with VPS_HOST, VPS_USER, SSH_KEY
+#   2. Uncomment the `push` trigger below
+#
 name: Deploy TR VPS
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
+  # push:
+  #   branches: [main]
 
 jobs:
   deploy:

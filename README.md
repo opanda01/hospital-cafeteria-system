@@ -282,8 +282,8 @@ Roles: `super_admin`, `tenant_admin`, `yemekhane`, `read_only`.
 
 ## CI/CD
 
-- **`.github/workflows/ci.yml`**: backend (ruff, pytest), edge (Go build), frontend (lint, build), Docker build.
-- **`.github/workflows/deploy.yml`**: GitHub Environment `production-tr` with `VPS_HOST`, `VPS_USER`, `SSH_KEY`; remote `docker compose` using prod overrides.
+- **`.github/workflows/ci.yml`**: backend (ruff, pytest), edge (Go build), frontend (lint, build), Docker build. Skips runs for changes under `docs/**` or `*.md` only.
+- **`.github/workflows/deploy.yml`**: **manual only** (`workflow_dispatch`) until a VPS is configured. When ready: add Environment `production-tr` (`VPS_HOST`, `VPS_USER`, `SSH_KEY`) and uncomment the `push` trigger in the workflow file.
 
 Example server path: `/opt/yemekhane`. Production secrets in `.env.production` → `.env` on the server (**never commit**).
 
