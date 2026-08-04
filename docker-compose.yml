@@ -1,0 +1,142 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-yemekhane}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+      POSTGRES_DB: ${POSTGRES_DB:-yemekhane}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yemekhane}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - yemekhane
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - yemekhane
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./infra/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    ports:
+      - "1883:1883"
+    networks:
+      - yemekhane
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-yemekhane}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/${POSTGRES_DB:-yemekhane}
+      REDIS_URL: redis://redis:6379/0
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: "1883"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    networks:
+      - yemekhane
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - yemekhane
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - yemekhane
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - yemekhane
+
+  edge-gateway:
+    profiles:
+      - edge
+    build:
+      context: ./edge-gateway
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      EDGE_API_URL: http://api:8000
+      EDGE_MQTT_BROKER: tcp://mosquitto:1883
+      EDGE_DATA_DIR: /app/data
+    volumes:
+      - edge_data:/app/data
+    ports:
+      - "9000:9000"
+      - "9091:9090"
+    depends_on:
+      - api
+      - mosquitto
+    networks:
+      - yemekhane
+
+  reader-simulator:
+    profiles:
+      - edge
+    build:
+      context: ./tools/reader-simulator
+      dockerfile: Dockerfile
+    environment:
+      SIM_TARGET: edge-gateway:9000
+      SIM_DEVICE_ID: reader-giris-1
+    depends_on:
+      - edge-gateway
+    networks:
+      - yemekhane
+
+networks:
+  yemekhane:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mosquitto_data:
+  edge_data:

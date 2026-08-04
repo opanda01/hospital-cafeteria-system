@@ -1,0 +1,40 @@
+name: Deploy TR VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production-tr
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy compose files
+        run: |
+          tar czf deploy.tgz docker-compose.yml docker-compose.prod.yml infra backend frontend edge-gateway tools .env.example
+
+      - name: Deploy over SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: deploy.tgz
+          target: /opt/yemekhane
+
+      - name: Remote docker compose up
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/yemekhane
+            tar xzf deploy.tgz
+            if [ -f .env.production ]; then cp .env.production .env; fi
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull || true
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
