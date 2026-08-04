@@ -1,5 +1,4 @@
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -47,8 +46,9 @@ async def verify_device_api_key(
     api_key: str,
     db: AsyncSession,
 ):
-    from app.models import Device
     from passlib.context import CryptContext
+
+    from app.models import Device
 
     pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
     result = await db.execute(select(Device).where(Device.device_key == device_key))
@@ -63,7 +63,7 @@ async def verify_device_api_key(
 def device_online(last_seen: datetime | None, threshold_sec: int = 120) -> bool:
     if not last_seen:
         return False
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if last_seen.tzinfo is None:
-        last_seen = last_seen.replace(tzinfo=timezone.utc)
+        last_seen = last_seen.replace(tzinfo=UTC)
     return (now - last_seen).total_seconds() <= threshold_sec

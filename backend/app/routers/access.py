@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import select
@@ -7,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db, get_redis
-from app.deps import get_current_admin, require_roles
+from app.deps import require_roles
 from app.models import AdminUser, Device, MealTransaction
 from app.schemas import (
     AccessValidateRequest,

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.models import Card, CardStatus, Device, MealEntitlement, MealType, User
-from app.schemas import EdgeSyncResponse, EdgeSyncCard, EdgeSyncMeal, EdgeSyncEntitlement
+from app.schemas import EdgeSyncCard, EdgeSyncEntitlement, EdgeSyncMeal, EdgeSyncResponse
 
 router = APIRouter(prefix="/internal/edge/v1", tags=["edge-internal"])
 

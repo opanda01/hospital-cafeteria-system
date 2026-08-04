@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -40,7 +40,7 @@ async def device_heartbeat(body: HeartbeatPayload, db: AsyncSession = Depends(ge
     device = result.scalar_one_or_none()
     if not device:
         raise HTTPException(status_code=404, detail="Cihaz bulunamadı")
-    device.son_iletisim = body.ts.astimezone(timezone.utc) if body.ts.tzinfo else body.ts.replace(tzinfo=timezone.utc)
+    device.son_iletisim = body.ts.astimezone(UTC) if body.ts.tzinfo else body.ts.replace(tzinfo=UTC)
     device.cache_version = body.cache_version
     await db.commit()
     return {"ok": True}

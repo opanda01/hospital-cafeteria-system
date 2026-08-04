@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, time, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
@@ -204,7 +204,7 @@ async def _persist(
         user_id=user_id,
         meal_id=meal_id,
         okuyucu_id=device.id,
-        islem_zamani=at.astimezone(timezone.utc),
+        islem_zamani=at.astimezone(UTC),
         transaction_date=tx_date,
         sonuc=sonuc,
         offline_senkron=offline_senkron,

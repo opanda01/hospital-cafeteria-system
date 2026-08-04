@@ -1,10 +1,10 @@
 import asyncio
 import json
 import logging
-import uuid
-from datetime import datetime
+from datetime import UTC
 
 import aiomqtt
+from pydantic import ValidationError
 from sqlalchemy import select
 
 from app.config import settings
@@ -39,7 +39,7 @@ async def mqtt_consumer_loop(stop_event: asyncio.Event) -> None:
                         await _handle_event(payload)
         except asyncio.CancelledError:
             break
-        except Exception:
+        except (aiomqtt.MqttError, OSError, ConnectionError):
             logger.exception("MQTT connection error, retry in 5s")
             await asyncio.sleep(5)
 
@@ -47,9 +47,8 @@ async def mqtt_consumer_loop(stop_event: asyncio.Event) -> None:
 async def _handle_heartbeat(raw: dict) -> None:
     try:
         body = HeartbeatPayload.model_validate(raw)
-    except Exception:
+    except ValidationError:
         return
-    from datetime import timezone
 
     async with SessionLocal() as db:
         result = await db.execute(
@@ -63,8 +62,8 @@ async def _handle_heartbeat(raw: dict) -> None:
             return
         ts = body.ts
         if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        device.son_iletisim = ts.astimezone(timezone.utc)
+            ts = ts.replace(tzinfo=UTC)
+        device.son_iletisim = ts.astimezone(UTC)
         device.cache_version = body.cache_version
         await db.commit()
 
@@ -72,7 +71,7 @@ async def _handle_heartbeat(raw: dict) -> None:
 async def _handle_event(raw: dict) -> None:
     try:
         evt = MqttAccessEvent.model_validate(raw)
-    except Exception:
+    except ValidationError:
         return
     redis = await get_redis()
     async with SessionLocal() as db:
