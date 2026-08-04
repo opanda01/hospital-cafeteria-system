@@ -31,15 +31,6 @@ Card-reader access control, meal entitlement checks, device fleet monitoring, an
 
 > **Domain & compliance (Turkish):** [`proje.md`](./proje.md) — Panates integration, KVKK, pilot scope.
 
-### GitHub repository **About** (paste on github.com → Settings or repo homepage ✏️)
-
-| Field | Copy this |
-|--------|-----------|
-| **Description** | Hospital cafeteria automation: Go edge gateway, FastAPI backend, React admin, PostgreSQL/Redis, MQTT, Docker — meal access & device fleet monitoring. |
-| **Topics** | `hospital` `cafeteria` `access-control` `fastapi` `golang` `react` `typescript` `postgresql` `redis` `mqtt` `iot` `edge-computing` `docker` `prometheus` `grafana` `multi-tenant` `healthcare` `turkey` `kvkk` |
-
----
-
 ## Architecture
 
 ```mermaid
